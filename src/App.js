@@ -1,24 +1,40 @@
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
+import firebase from './firebase'; 
+import {BandInput} from './BandInput'
 
 function App() {
+  var [Bands, setBands] = React.useState([])
+  var [newBandName, setNewBandName] = React.useState()
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const db = firebase.firestore()
+      const data = await db.collection("Bands").get()
+      console.log(data)
+      setBands(data.docs.map(doc => ({...doc.data(), id: doc.id})))
+    }
+    fetchData()
+  }, [])
+  
+  const onCreate = () => {
+    const db = firebase.firestore()
+    db.collection('Bands').add({Name: newBandName})
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+    <h1>Bands</h1>
+    <ul>
+      <input value={newBandName} onChange={(e) => setNewBandName(e.target.value)}/>
+      <button onClick={onCreate}>Create</button>
+      {Bands.map(band => (
+        <li key={band.Name}>
+          <BandInput band={band}/>{band.Name}
+        </li>
+      ))}
+    </ul> 
+    </>
   );
 }
 
